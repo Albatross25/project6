@@ -1,0 +1,62 @@
+The .dump files are converted using the below command:
+/cs5700/dump2bro [.dump filename]
+The converted files are in bro-logs folder
+The grep_pii.sh and server.sh scripts should be executed as below:
+
+./grep_pii.sh ~/bro-logs/*
+./server.sh ~/bro-logs/* -- output goes to file servers_contacted.txt
+
+Approach
+________
+Bash script  grep_pii.sh was written to search for the personal information leaked in the trace files collected after using the application through browser and the app for 3 minutes.
+grep command is used to search for the particular information. grep -i: ignores the case grep -c: gives the count
+
+My details are:
+Physical Location (and the ZIP Code):latitude: 42.34 longitude=-71.09 02215
+IMEI:359307061162299
+MAC Address:70:EC:E4:03:22:79
+iOS Advertiser ID:017B7101-1793-488D-BC45-682BD704C076 and 22EBB18535-70F3-46D0-800C-C49D12FE4653
+Physical Address:1171 boylston street
+IPhone: iOS Version:9.3.1 Build Number:13E238
+phone number : 8573008082 T-mobile
+Email address and password used:trahkrub@gmail.com/projectRecon567
+Name:Alexander
+
+To Find the servers contacted by each application,bash script server.sh was written. Cut command is used to find domain name servers, in all the trace files coloum 9 has the host feild. 
+The list is sorted and uniq -c command is used to find the number of times each server was visited.
+
+PIIs found
+__________
+Email address, passsword in palin text, zip code,advertiser ID, latitude and longitude was leaked by few applications.
+phone platform version and build number was leaked in all applications.
+
+service				Platform	GPS  ZipCode Address	Username   Password  Email	First Name	Last Name	Ad ID
+CNN Breaking US & World News	App			4										1
+CNN Breaking US & World News	Chrome									
+Duolingo			App									
+Duolingo			Chrome									
+RetailMeNot Coupons		App													140
+RetailMeNot Coupons		Chrome									
+Amazon Shopping			App		3					2	3					1
+Amazon Shopping			Chrome							2	4					96
+Fandango Movies			App			5				2	4					2
+Fandango Movies			Chrome							1	2			
+
+Implications of information leaked:
+__________________________________
+Passwords leaked in plain text is not acceptable, as when that application is used in public wifi, an hacker can easily steal the password.
+Location was leaked by applications, again the exact coridinates being leaked is not good. 
+With advertiser id being shared,the user may receive unwanted advertisments based on their search history.
+
+Anwsers:
+________
+1.How many sites are contacted by each app that you use? 
+The sites contacted by each application is listed in the file servers_contacted.txt
+
+2,3) Does that traffic seem legitimate? Is there anything surprising in your data?
+AS seen from the trace files, data was exchanged both over HTTP and HTTPS.Whats suprising is even HTTPS has PII leaks. And a lot of requests and responses was exchanged in the given time of 3 minutes.one more supising thing noticed is, amazon is sharing the location with sites like proximity.gimbal.com,ssl.google-analytics.com,registration.gimbal.com,retailmenot.com.
+Also the location shared by Amazon is in format longitude=-71&latitude=42 and also ladtitude=42.346880&longitude=-71.093. Two different formats are being used.
+Avertiser id is shared with ads.celtra.com,mediaservice.rmn.com. Not sure what these servers are used for.This traffic dosent seem to be legitimate.
+
+Advertiser ID is leaked more by Retailmenot when used in chrome than in app. But for amazon its the other way.So we cant really infer if mobile website is better or application is better for privacy.
+
